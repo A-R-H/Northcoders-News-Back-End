@@ -1,0 +1,1 @@
+exports.topicsRouter = require("./topics");
