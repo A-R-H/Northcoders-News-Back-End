@@ -45,17 +45,17 @@ describe("/api", () => {
         });
     });
     it("POST /:topic_slug/articles -> posts an article that belongs to the given topic and returns it", () => {
+      const newArticle = {
+        title: "A blog about Mitch",
+        body: "You go Mitch!"
+      };
       return request
-        .post(
-          JSON.stringify({
-            title: "Cook good",
-            body: "You should cook good!"
-          })
-        )
+        .post(`/api/topics/${topics[0].slug}/articles`)
+        .send(newArticle)
         .expect(201)
         .then(({ body }) => {
-          console.log(body);
-          expect(body).to.eql("haha");
+          expect(body.article.title).to.equal("A blog about Mitch");
+          expect(body.article.body).to.equal("You go Mitch!");
         });
     });
   });

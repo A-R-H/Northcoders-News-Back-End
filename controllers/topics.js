@@ -10,21 +10,21 @@ exports.sendTopics = (req, res, next) => {
 
 exports.sendArticlesByTopic = (req, res, next) => {
   let articlesWithoutCommentCounts;
-  return Article.find()
-    .lean()
-    .populate("belongs_to")
-    .populate("created_by")
-    .then(articles => {
-      articlesWithoutCommentCounts = articles.reduce((acc, article) => {
-        if (article.belongs_to.slug === req.params.topic_slug) {
-          article.created_by = article.created_by.username;
-          article.belongs_to = article.belongs_to.slug;
-          acc.push(article);
-        }
-        return acc;
-      }, []);
+  return getTopicBySlug(req.params.topic_slug)
+    .then(topic_id => {
+      return Article.find({ belongs_to: topic_id })
+        .lean()
+        .populate("belongs_to")
+        .populate("created_by");
+    })
+    .then(articleDocs => {
+      articlesWithoutCommentCounts = articleDocs.map(articleDoc => {
+        articleDoc.created_by = articleDoc.created_by.username;
+        articleDoc.belongs_to = articleDoc.belongs_to.slug;
+        return articleDoc;
+      });
       return Promise.all(
-        articles.map(article => {
+        articleDocs.map(article => {
           return Comment.find({ belongs_to: article._id }).then(comments => {
             return comments.length;
           });
@@ -41,10 +41,18 @@ exports.sendArticlesByTopic = (req, res, next) => {
 };
 
 exports.postArticle = (req, res, next) => {
-  const newArticle = req.body;
-  newArticle.belongs_to = getTopicBySlug(req.params.topic_slug);
-  newArticle.created_by = getRandomUserId();
-  return Article.create(newArticle).then(article => {
-    res.send({ article });
-  });
+  return Promise.all([getTopicBySlug(req.params.topic_slug), getRandomUserId()])
+    .then(([belongs_to, created_by]) => {
+      const article = req.body;
+      article.belongs_to = belongs_to;
+      article.created_by = created_by;
+      return new Article(article).save();
+    })
+    .then(article => {
+      res.status(201).send({ article });
+    })
+    .catch(err => {
+      console.log(err);
+      next(err);
+    });
 };

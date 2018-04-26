@@ -57,8 +57,12 @@ function randomForDevFirstForTest(docs) {
 
 exports.getTopicBySlug = slug => {
   return Topic.find({ slug }).then(topic => {
-    return topic._id;
+    return topic[0]._id;
   });
 };
 
-exports.getRandomUserId = () => {};
+exports.getRandomUserId = () => {
+  return User.find().then(users => {
+    return users[Math.floor(Math.random() * users.length)]._id;
+  });
+};
