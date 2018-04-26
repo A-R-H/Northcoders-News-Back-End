@@ -1,8 +1,17 @@
 const randomWords = require("random-words");
 const { Topic, User, Comment } = require("../models");
 
+function randomForDevFirstForTest(docs) {
+  return process.env.NODE_ENV === "development"
+    ? docs[Math.floor(Math.random() * docs.length)]._id
+    : docs[0]._id;
+}
+
 exports.formatArticleData = (articleData, topicDocs, userDocs) => {
-  const refObj = createTopicRefObj(topicDocs);
+  const refObj = topicDocs.reduce((acc, topic) => {
+    acc[topic.slug] = topic._id;
+    return acc;
+  }, {});
   return articleData.reduce((acc, article) => {
     acc.push({
       title: article.title,
@@ -15,12 +24,12 @@ exports.formatArticleData = (articleData, topicDocs, userDocs) => {
   }, []);
 };
 
-function createTopicRefObj(topicDocs) {
-  return topicDocs.reduce((acc, topic) => {
-    acc[topic.slug] = topic._id;
-    return acc;
-  }, {});
-}
+// function createTopicRefObj(topicDocs) {
+//   return topicDocs.reduce((acc, topic) => {
+//     acc[topic.slug] = topic._id;
+//     return acc;
+//   }, {});
+// }
 
 exports.createComments = (articleDocs, userDocs) => {
   const amount = process.env.NODE_ENV === "test" ? 3 : 50;
@@ -49,12 +58,6 @@ exports.createComments = (articleDocs, userDocs) => {
   });
 };
 
-function randomForDevFirstForTest(docs) {
-  return process.env.NODE_ENV === "development"
-    ? docs[Math.floor(Math.random() * docs.length)]._id
-    : docs[0]._id;
-}
-
 exports.getTopicBySlug = slug => {
   return Topic.find({ slug }).then(topic => {
     if (topic.length === 0) {
@@ -66,7 +69,6 @@ exports.getTopicBySlug = slug => {
 exports.getRandomUserId = () => {
   return User.find().then(users => {
     return randomForDevFirstForTest(users);
-    // return users[Math.floor(Math.random() * users.length)]._id;
   });
 };
 
