@@ -38,7 +38,7 @@ const seedDB = (articleData, topicData, userData) => {
     })
     .then(([userDocs, topicDocs, articleDocs, commentDocs]) => {
       console.log(`Inserted ${commentDocs.length} comments!`);
-      return [userDocs, topicDocs, articleDocs, commentDocs];
+      return [articleDocs, topicDocs, userDocs, commentDocs];
     });
 };
 

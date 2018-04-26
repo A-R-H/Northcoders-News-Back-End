@@ -1,5 +1,5 @@
 const randomWords = require("random-words");
-const { Topic, User } = require("../models");
+const { Topic, User, Comment } = require("../models");
 
 exports.formatArticleData = (articleData, topicDocs, userDocs) => {
   const refObj = createTopicRefObj(topicDocs);
@@ -65,4 +65,25 @@ exports.getRandomUserId = () => {
   return User.find().then(users => {
     return users[Math.floor(Math.random() * users.length)]._id;
   });
+};
+
+exports.addCommentCountsToArticleDocs = docs => {
+  return Promise.all(
+    docs.map(article => {
+      return Comment.count({ belongs_to: article._id });
+    })
+  ).then(commentCounts => {
+    return docs.map((article, i) => {
+      article.comments = commentCounts[i];
+      return article;
+    });
+  });
+};
+
+exports.createFormattedComment = (body, article_id, user_id) => {
+  return {
+    body,
+    belongs_to: article_id,
+    created_by: user_id
+  };
 };

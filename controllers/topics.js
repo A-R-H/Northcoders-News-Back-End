@@ -1,6 +1,10 @@
 const { Topic, Article, Comment } = require("../models");
 
-const { getTopicBySlug, getRandomUserId } = require("../utils");
+const {
+  getTopicBySlug,
+  getRandomUserId,
+  addCommentCountsToArticleDocs
+} = require("../utils");
 
 exports.sendTopics = (req, res, next) => {
   return Topic.find().then(topics => {
@@ -9,33 +13,17 @@ exports.sendTopics = (req, res, next) => {
 };
 
 exports.sendArticlesByTopic = (req, res, next) => {
-  let articlesWithoutCommentCounts;
   return getTopicBySlug(req.params.topic_slug)
     .then(topic_id => {
       return Article.find({ belongs_to: topic_id })
         .lean()
-        .populate("belongs_to")
-        .populate("created_by");
+        .populate("belongs_to", "-__v")
+        .populate("created_by", "-__v");
     })
     .then(articleDocs => {
-      articlesWithoutCommentCounts = articleDocs.map(articleDoc => {
-        articleDoc.created_by = articleDoc.created_by.username;
-        articleDoc.belongs_to = articleDoc.belongs_to.slug;
-        return articleDoc;
-      });
-      return Promise.all(
-        articleDocs.map(article => {
-          return Comment.find({ belongs_to: article._id }).then(comments => {
-            return comments.length;
-          });
-        })
-      );
+      return addCommentCountsToArticleDocs(articleDocs);
     })
-    .then(commentCounts => {
-      const articles = articlesWithoutCommentCounts.map((article, i) => {
-        article.comments = commentCounts[i];
-        return article;
-      });
+    .then(articles => {
       res.send({ articles });
     });
 };
