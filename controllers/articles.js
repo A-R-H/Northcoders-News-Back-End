@@ -62,3 +62,25 @@ exports.postComment = (req, res, next) => {
       res.status(201).send({ comment });
     });
 };
+
+exports.adjustArticleVotes = (req, res, next) => {
+  let upOrDown;
+  req.query.vote === "up"
+    ? (upOrDown = 1)
+    : req.query.vote === "down"
+      ? (upOrDown = -1)
+      : next({ status: 400, message: "Invalid vote passed" });
+  return Article.findByIdAndUpdate(
+    ObjectId(req.params.article_id),
+    {
+      $inc: { votes: upOrDown }
+    },
+    { new: true, select: { votes: true, _id: false } }
+  )
+    .then(article => {
+      res.send({ article });
+    })
+    .catch(err => {
+      next(err);
+    });
+};

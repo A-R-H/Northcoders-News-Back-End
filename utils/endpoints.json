@@ -1,0 +1,28 @@
+{
+  "topics": {
+    "Get all the topics": "GET /api/topics",
+    "Returns all the articles for a certain topic":
+      "GET /api/topics/:topic_id/articles",
+    "Add a new article to a topic. This route requires a JSON body with title and body key value pairs":
+      "POST /api/topics/:topic_id/articles"
+  },
+  "articles": {
+    "Returns all the articles": "GET /api/articles",
+    "Get an individual article": "GET /api/articles/:article_id",
+    "Get all the comments for a individual article":
+      "GET /api/articles/:article_id/comments",
+    "Add a new comment to an article. This route requires a JSON body with a comment key and value pair":
+      "POST /api/articles/:article_id/comments",
+    "Increment or Decrement the votes of an article by one. This route requires a vote query of 'up' or 'down'":
+      "PUT /api/articles/:article_id"
+  },
+  "comments": {
+    "Increment or Decrement the votes of a comment by one. This route requires a vote query of 'up' or 'down'":
+      "PUT /api/comments/:comment_id",
+    "Deletes a comment": "DELETE /api/comments/:comment_id"
+  },
+  "users": {
+    "Returns a JSON object with the profile data for the specified user":
+      "GET /api/users/:username"
+  }
+}

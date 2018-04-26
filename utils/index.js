@@ -57,13 +57,16 @@ function randomForDevFirstForTest(docs) {
 
 exports.getTopicBySlug = slug => {
   return Topic.find({ slug }).then(topic => {
-    return topic[0]._id;
+    if (topic.length === 0) {
+      throw "Topic not found";
+    } else return topic[0]._id;
   });
 };
 
 exports.getRandomUserId = () => {
   return User.find().then(users => {
-    return users[Math.floor(Math.random() * users.length)]._id;
+    return randomForDevFirstForTest(users);
+    // return users[Math.floor(Math.random() * users.length)]._id;
   });
 };
 

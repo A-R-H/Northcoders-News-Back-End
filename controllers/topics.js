@@ -7,9 +7,13 @@ const {
 } = require("../utils");
 
 exports.sendTopics = (req, res, next) => {
-  return Topic.find().then(topics => {
-    res.send({ topics });
-  });
+  return Topic.find()
+    .then(topics => {
+      res.send({ topics });
+    })
+    .catch(err => {
+      next({ status: 502, message: "Internal database error" });
+    });
 };
 
 exports.sendArticlesByTopic = (req, res, next) => {
@@ -25,6 +29,11 @@ exports.sendArticlesByTopic = (req, res, next) => {
     })
     .then(articles => {
       res.send({ articles });
+    })
+    .catch(err => {
+      if (err === "Topic not found") {
+        next({ status: 404, message: err });
+      } else next({ status: 502, message: "Internal database error" });
     });
 };
 
@@ -40,7 +49,8 @@ exports.postArticle = (req, res, next) => {
       res.status(201).send({ article });
     })
     .catch(err => {
-      console.log(err);
-      next(err);
+      if (err === "Topic not found") {
+        next({ status: 404, message: err + ", article was not posted" });
+      } else next({ status: 502, message: "Internal database error" });
     });
 };

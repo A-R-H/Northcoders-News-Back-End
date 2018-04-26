@@ -4,6 +4,7 @@ const app = require("../app");
 const seedDB = require("../seed/seed");
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
+const { Comment } = require("../models");
 
 const { articleData, topicData, userData } = require("../seed/testData");
 
@@ -18,9 +19,16 @@ describe("/api", () => {
     });
   });
   after(() => mongoose.disconnect());
-  // describe("/", () => {
-  //   it("", () => {});
-  // });
+  describe("/", () => {
+    it("GET / -> returns an object containing links to all of the endpoints", () => {
+      return request
+        .get("/api")
+        .expect(200)
+        .then(({ body }) => {
+          expect(Object.keys(body).length).to.equal(4);
+        });
+    });
+  });
   describe("/topics", () => {
     it("GET / -> returns all topics", () => {
       return request
@@ -125,6 +133,65 @@ describe("/api", () => {
         .then(({ body }) => {
           expect(ObjectId(body.comment._id)).to.be.an.instanceOf(ObjectId);
           expect(body.comment.body).to.equal("This is a comment!!!");
+          expect(body.comment.created_by.toString()).to.equal(
+            users[0]._id.toString()
+          );
+        });
+    });
+    it("PUT /:article_id?vote=up -> Increments vote count on article", () => {
+      return request
+        .put(`/api/articles/${articles[0]._id}?vote=up`)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.article.votes).to.equal(1);
+        });
+    });
+    it("PUT /:article_id?vote=down -> Decrements vote count on article", () => {
+      return request
+        .put(`/api/articles/${articles[0]._id}?vote=down`)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.article.votes).to.equal(-1);
+        });
+    });
+  });
+  describe("/comments", () => {
+    it("PUT /:comment_id?vote=up -> Increments vote count on comment", () => {
+      return request
+        .put(`/api/comments/${comments[0]._id}?vote=up`)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comment.votes).to.equal(1);
+        });
+    });
+    it("PUT /:comment_id?vote=down -> Decrements vote count on comment", () => {
+      return request
+        .put(`/api/comments/${comments[0]._id}?vote=down`)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comment.votes).to.equal(-1);
+        });
+    });
+    it("DELETE /:comment_id -> Deletes a comment", () => {
+      return request
+        .delete(`/api/comments/${comments[0]._id}`)
+        .expect(204)
+        .then(() => {
+          return Comment.count({ belongs_to: articles[0]._id });
+        })
+        .then(commentCount => {
+          expect(commentCount).to.equal(2);
+        });
+    });
+  });
+  describe("/users", () => {
+    it("GET /:username -> returns user information", () => {
+      return request
+        .get(`/api/users/${users[0].username}`)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.user.username).to.equal("butter_bridge");
+          expect(body.user.name).to.equal("jonny");
         });
     });
   });
