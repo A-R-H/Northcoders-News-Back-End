@@ -23,7 +23,7 @@ function createTopicRefObj(topicDocs) {
 }
 
 exports.createComments = (articleDocs, userDocs) => {
-  const amount = process.env.NODE_ENV === "test" ? 3 : 30;
+  const amount = process.env.NODE_ENV === "test" ? 3 : 50;
   const commentBodies = randomWords({
     exactly: amount,
     wordsPerString: 15,

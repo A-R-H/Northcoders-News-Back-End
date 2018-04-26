@@ -3,6 +3,7 @@ process.env.NODE_ENV = "test";
 const app = require("../app");
 const seedDB = require("../seed/seed");
 const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
 const { articleData, topicData, userData } = require("../seed/testData");
 
@@ -26,6 +27,7 @@ describe("/api", () => {
         .get("/api/topics")
         .expect(200)
         .then(({ body }) => {
+          expect(ObjectId(body.topics[0]._id)).to.be.an.instanceOf(ObjectId);
           expect(body.topics.length).to.equal(2);
           expect(body.topics[1].title).to.equal("Cats");
         });
@@ -54,6 +56,7 @@ describe("/api", () => {
         .send(newArticle)
         .expect(201)
         .then(({ body }) => {
+          expect(ObjectId(body.article._id)).to.be.an.instanceOf(ObjectId);
           expect(body.article.title).to.equal("A blog about Mitch");
           expect(body.article.body).to.equal("You go Mitch!");
         });

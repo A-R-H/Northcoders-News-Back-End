@@ -1,8 +1,9 @@
 const seedDb = require("./seed");
 const mongoose = require("mongoose");
 const { articleData, topicData, userData } = require("./devData");
+const path = require("../config");
 
 mongoose
-  .connect("mongodb://localhost:27017/northcoders_news")
+  .connect(path)
   .then(() => seedDb(articleData, topicData, userData))
   .then(() => mongoose.disconnect());
