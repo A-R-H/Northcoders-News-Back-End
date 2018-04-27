@@ -4,7 +4,6 @@ const { Topic, User, Comment } = require("../models");
 const ObjectId = require("mongoose").Types.ObjectId;
 
 function randomForDevFirstForTest(docs) {
-  console.log(process.env.NODE_ENV);
   return process.env.NODE_ENV === "test"
     ? docs[0]._id
     : docs[Math.floor(Math.random() * docs.length)]._id;
