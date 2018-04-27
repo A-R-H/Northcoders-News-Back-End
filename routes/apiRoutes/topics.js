@@ -10,8 +10,8 @@ const router = express.Router();
 
 router.get("/", sendTopics);
 
-router.get("/:topic_slug/articles", sendArticlesByTopic);
+router.get("/:topic/articles", sendArticlesByTopic);
 
-router.post("/:topic_slug/articles", postArticle);
+router.post("/:topic/articles", postArticle);
 
 module.exports = router;

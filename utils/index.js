@@ -1,6 +1,8 @@
 const randomWords = require("random-words");
 const { Topic, User, Comment } = require("../models");
 
+const ObjectId = require("mongoose").Types.ObjectId;
+
 function randomForDevFirstForTest(docs) {
   return process.env.NODE_ENV === "development"
     ? docs[Math.floor(Math.random() * docs.length)]._id
@@ -51,13 +53,25 @@ exports.createComments = (articleDocs, userDocs) => {
   });
 };
 
-exports.getTopicBySlug = slug => {
+exports.getIdFromSlugOrId = topic => {
+  try {
+    ObjectId(topic);
+  } catch (err) {
+    return getTopicBySlug(topic);
+  }
+  return Topic.findById(topic).then(topicDoc => {
+    if (topicDoc === null) throw "Topic not found";
+    else return topic;
+  });
+};
+
+function getTopicBySlug(slug) {
   return Topic.find({ slug }).then(topic => {
     if (topic.length === 0) {
       throw "Topic not found";
     } else return topic[0]._id;
   });
-};
+}
 
 exports.getRandomUserId = () => {
   return User.find().then(users => {

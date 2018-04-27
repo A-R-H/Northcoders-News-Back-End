@@ -40,7 +40,7 @@ describe("/api", () => {
           expect(body.topics[1].title).to.equal("Cats");
         });
     });
-    it("GET /:topic_slug/articles -> returns all articles for a topic", () => {
+    it("GET /:topic_slug/articles -> returns all articles for a topic slug", () => {
       return request
         .get(`/api/topics/${topics[0].slug}/articles`)
         .expect(200)
@@ -56,10 +56,31 @@ describe("/api", () => {
           expect(body.articles[1].comments).to.equal(0);
         });
     });
-    it("GET /:topic_slug/articles -> returns a 404 error for non-existent topic", () => {
+    it("GET /:topic_slug/articles -> returns a 404 error for non-existent topic slug", () => {
       return request.get(`/api/topics/sam/articles`).expect(404);
     });
-    it("POST /:topic_slug/articles -> posts an article that belongs to the given topic and returns it", () => {
+    it("GET /:topic_id/articles -> returns all articles for a topic ID", () => {
+      return request
+        .get(`/api/topics/${topics[0]._id}/articles`)
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles.length).to.equal(2);
+          expect(body.articles[1].title).to.equal(
+            "7 inspirational thought leaders from Manchester UK"
+          );
+          expect(body.articles[1].created_by.username).to.equal(
+            "butter_bridge"
+          );
+          expect(body.articles[0].comments).to.equal(3);
+          expect(body.articles[1].comments).to.equal(0);
+        });
+    });
+    it("GET /:topic_slug/articles -> returns a 404 error for non-existent topic ID", () => {
+      return request
+        .get(`/api/topics/5ae1ec6a5dd4b77149a4b655/articles`)
+        .expect(404);
+    });
+    it("POST /:topic_slug/articles -> posts an article that belongs to the given topic slug and returns it", () => {
       const newArticle = {
         title: "A blog about Mitch",
         body: "You go Mitch!"
@@ -77,7 +98,7 @@ describe("/api", () => {
           expect(body.article.body).to.equal("You go Mitch!");
         });
     });
-    it("POST /:topic_slug/articles -> returns a 404 error for non-existant topic", () => {
+    it("POST /:topic_slug/articles -> returns a 404 error for non-existant topic slug", () => {
       const newArticle = {
         title:
           "An exhaustive treatise concerning all research showing any potential merits of lectures at 8:30am",
@@ -94,6 +115,44 @@ describe("/api", () => {
       };
       return request
         .post(`/api/topics/mitch/articles`)
+        .send(newArticle)
+        .expect(400);
+    });
+    it("POST /:topic_id/articles -> posts an article that belongs to the given topic ID and returns it", () => {
+      const newArticle = {
+        title: "A blog about Mitch",
+        body: "You go Mitch!"
+      };
+      return request
+        .post(`/api/topics/${topics[0]._id}/articles`)
+        .send({
+          title: "A blog about Mitch",
+          body: "You go Mitch!"
+        })
+        .expect(201)
+        .then(({ body }) => {
+          expect(ObjectId(body.article._id)).to.be.an.instanceOf(ObjectId);
+          expect(body.article.title).to.equal("A blog about Mitch");
+          expect(body.article.body).to.equal("You go Mitch!");
+        });
+    });
+    it("POST /:topic_id/articles -> returns a 404 error for non-existant topic ID", () => {
+      const newArticle = {
+        title:
+          "An exhaustive treatise concerning all research showing any potential merits of lectures at 8:30am",
+        body: "-"
+      };
+      return request
+        .post(`/api/topics/5ae1ec6a5dd4b77149a4b674/articles`)
+        .send(newArticle)
+        .expect(404);
+    });
+    it("POST /:topic_id/articles -> returns a 400 error when posting an incorrectly formatted article", () => {
+      const newArticle = {
+        body: "mitch"
+      };
+      return request
+        .post(`/api/topics/${topics[0]._id}/articles`)
         .send(newArticle)
         .expect(400);
     });

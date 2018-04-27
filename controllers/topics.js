@@ -1,7 +1,9 @@
 const { Topic, Article, Comment } = require("../models");
 
+const ObjectId = require("mongoose").Schema.Types.ObjectId;
+
 const {
-  getTopicBySlug,
+  getIdFromSlugOrId,
   getRandomUserId,
   addCommentCountsToArticleDocs
 } = require("../utils");
@@ -17,7 +19,7 @@ exports.sendTopics = (req, res, next) => {
 };
 
 exports.sendArticlesByTopic = (req, res, next) => {
-  return getTopicBySlug(req.params.topic_slug)
+  return getIdFromSlugOrId(req.params.topic)
     .then(topic_id => {
       return Article.find({ belongs_to: topic_id })
         .lean()
@@ -38,7 +40,7 @@ exports.sendArticlesByTopic = (req, res, next) => {
 };
 
 exports.postArticle = (req, res, next) => {
-  return Promise.all([getTopicBySlug(req.params.topic_slug), getRandomUserId()])
+  return Promise.all([getIdFromSlugOrId(req.params.topic), getRandomUserId()])
     .then(([belongs_to, created_by]) => {
       const article = req.body;
       article.belongs_to = belongs_to;
