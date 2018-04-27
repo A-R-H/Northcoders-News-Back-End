@@ -4,9 +4,9 @@ const { Topic, User, Comment } = require("../models");
 const ObjectId = require("mongoose").Types.ObjectId;
 
 function randomForDevFirstForTest(docs) {
-  return process.env.NODE_ENV === "development"
-    ? docs[Math.floor(Math.random() * docs.length)]._id
-    : docs[0]._id;
+  return process.env.NODE_ENV === "test"
+    ? docs[0]._id
+    : docs[Math.floor(Math.random() * docs.length)]._id;
 }
 
 exports.formatArticleData = (articleData, topicDocs, userDocs) => {
