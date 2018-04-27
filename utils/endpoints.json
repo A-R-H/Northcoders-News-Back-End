@@ -1,16 +1,19 @@
 {
   "topics": {
-    "Get all the topics": "GET /api/topics",
+    "Get all the topics":
+      "GET /api/topics -> https://northcoders-news-back.herokuapp.com/api/topics",
     "Returns all the articles for a certain topic":
-      "GET /api/topics/:topic_id/articles OR GET /api/topics/:topic_slug/articles",
+      "GET /api/topics/:topic_id/articles OR GET /api/topics/:topic_slug/articles -> https://northcoders-news-back.herokuapp.com/api/topics/(topic slug or id)/articles",
     "Add a new article to a topic. This route requires a JSON body with title and body key value pairs":
       "POST /api/topics/:topic_id/articles OR POST /api/topics/:topic_slug/articles"
   },
   "articles": {
-    "Returns all the articles": "GET /api/articles",
-    "Get an individual article": "GET /api/articles/:article_id",
+    "Returns all the articles":
+      "GET /api/articles -> https://northcoders-news-back.herokuapp.com/api/articles",
+    "Get an individual article":
+      "GET /api/articles/:article_id -> https://northcoders-news-back.herokuapp.com/api/articles/(article id)",
     "Get all the comments for a individual article":
-      "GET /api/articles/:article_id/comments",
+      "GET /api/articles/:article_id/comments -> https://northcoders-news-back.herokuapp.com/api/articles/(article id)/comments",
     "Add a new comment to an article. This route requires a JSON body with a comment key and value pair":
       "POST /api/articles/:article_id/comments",
     "Increment or Decrement the votes of an article by one. This route requires a vote query of 'up' or 'down'":
@@ -23,6 +26,6 @@
   },
   "users": {
     "Returns a JSON object with the profile data for the specified user":
-      "GET /api/users/:username"
+      "GET /api/users/:username -> https://northcoders-news-back.herokuapp.com/api/users(user id)"
   }
 }
