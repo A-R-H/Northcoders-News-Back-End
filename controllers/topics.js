@@ -51,6 +51,11 @@ exports.postArticle = (req, res, next) => {
     .catch(err => {
       if (err === "Topic not found") {
         next({ status: 404, message: err + ", article was not posted" });
-      } else next({ status: 502, message: "Internal database error" });
+      } else if (err.name === "ValidationError")
+        next({
+          status: 400,
+          message: "Invalid article format, article was not posted"
+        });
+      else next({ status: 502, message: "Internal database error" });
     });
 };

@@ -25,7 +25,7 @@ describe("/api", () => {
         .get("/api")
         .expect(200)
         .then(({ body }) => {
-          expect(Object.keys(body).length).to.equal(4);
+          expect(body).to.keys(["topics", "articles", "users", "comments"]);
         });
     });
   });
@@ -56,6 +56,9 @@ describe("/api", () => {
           expect(body.articles[1].comments).to.equal(0);
         });
     });
+    it("GET /:topic_slug/articles -> returns a 404 error for non-existent topic", () => {
+      return request.get(`/api/topics/sam/articles`).expect(404);
+    });
     it("POST /:topic_slug/articles -> posts an article that belongs to the given topic and returns it", () => {
       const newArticle = {
         title: "A blog about Mitch",
@@ -73,6 +76,26 @@ describe("/api", () => {
           expect(body.article.title).to.equal("A blog about Mitch");
           expect(body.article.body).to.equal("You go Mitch!");
         });
+    });
+    it("POST /:topic_slug/articles -> returns a 404 error for non-existant topic", () => {
+      const newArticle = {
+        title:
+          "An exhaustive treatise concerning all research showing any potential merits of lectures at 8:30am",
+        body: "-"
+      };
+      return request
+        .post(`/api/topics/morning_lectures/articles`)
+        .send(newArticle)
+        .expect(404);
+    });
+    it("POST /:topic_slug/articles -> returns a 400 error when posting an incorrectly formatted article", () => {
+      const newArticle = {
+        body: "mitch"
+      };
+      return request
+        .post(`/api/topics/mitch/articles`)
+        .send(newArticle)
+        .expect(400);
     });
   });
   describe("/articles", () => {
@@ -106,7 +129,13 @@ describe("/api", () => {
           expect(body.article.created_by.username).to.equal("butter_bridge");
         });
     });
-    it("GET /:article_id -> returns comments for an article", () => {
+    it("GET /:article_id -> returns a 404 error for non-existent article", () => {
+      return request.get(`/api/articles/5ae2f2e0b1f96232cf183660`).expect(404);
+    });
+    it("GET /:article_id -> returns a 400 error when passed a non-valid ID", () => {
+      return request.get(`/api/articles/fakeID`).expect(400);
+    });
+    it("GET /:article_id/comments -> returns comments for an article", () => {
       return request
         .get(`/api/articles/${articles[0]._id}/comments`)
         .expect(200)
@@ -119,6 +148,14 @@ describe("/api", () => {
             "butter_bridge"
           );
         });
+    });
+    it("GET /:article_id/comments -> returns a 404 error for non-existent article", () => {
+      return request
+        .get(`/api/articles/5ae2f2e0b1f96232cf183660/comments`)
+        .expect(404);
+    });
+    it("GET /:article_id/comments -> returns a 400 error when passed a non-valid ID", () => {
+      return request.get(`/api/articles/fakeID/comments`).expect(400);
     });
     it("POST /:article_id/comments -> posts a comment on a specific article", () => {
       const newComment = {
@@ -138,6 +175,24 @@ describe("/api", () => {
           );
         });
     });
+    it("POST /:article_id/comments -> returns a 404 error for non-existant article", () => {
+      const newComment = {
+        body: "This is a comment!!!"
+      };
+      return request
+        .post(`/api/articles/5ae2f2dcb1f96232cf18365f/comments`)
+        .send(newComment)
+        .expect(404);
+    });
+    it("POST /:article_id/comments -> returns a 400 error when posting an incorrectly formatted comment", () => {
+      const newComment = {
+        votes: "loads"
+      };
+      return request
+        .post(`/api/articles/${articles[0]._id}/comments`)
+        .send(newComment)
+        .expect(400);
+    });
     it("PUT /:article_id?vote=up -> Increments vote count on article", () => {
       return request
         .put(`/api/articles/${articles[0]._id}?vote=up`)
@@ -153,6 +208,14 @@ describe("/api", () => {
         .then(({ body }) => {
           expect(body.article.votes).to.equal(-1);
         });
+    });
+    it("PUT /:article_id?vote=notUpOrDown -> returns a 400 error when passed an invalid vote query", () => {
+      return request
+        .put(`/api/articles/${articles[0]._id}?vote=biggerPlease`)
+        .expect(400);
+    });
+    it("PUT /:article_id?vote=notUpOrDown -> returns a 400 error when passed no vote query", () => {
+      return request.put(`/api/articles/${articles[0]._id}`).expect(400);
     });
   });
   describe("/comments", () => {
@@ -172,6 +235,14 @@ describe("/api", () => {
           expect(body.comment.votes).to.equal(-1);
         });
     });
+    it("PUT /:comment_id?vote=notUpOrDown -> returns a 400 error when passed an invalid vote query", () => {
+      return request
+        .put(`/api/comments/${comments[0]._id}?vote=biggerPlease`)
+        .expect(400);
+    });
+    it("PUT /:comment_id?vote=notUpOrDown -> returns a 400 error when passed no vote query", () => {
+      return request.put(`/api/comments/${comments[0]._id}`).expect(400);
+    });
     it("DELETE /:comment_id -> Deletes a comment", () => {
       return request
         .delete(`/api/comments/${comments[0]._id}`)
@@ -183,6 +254,11 @@ describe("/api", () => {
           expect(commentCount).to.equal(2);
         });
     });
+    it("DELETE /:comment_id -> returns a 404 error when trying to delete a non-existent comment", () => {
+      return request
+        .delete(`/api/comments/5ae2f2e0b1f96232cf183660`)
+        .expect(404);
+    });
   });
   describe("/users", () => {
     it("GET /:username -> returns user information", () => {
@@ -193,6 +269,9 @@ describe("/api", () => {
           expect(body.user.username).to.equal("butter_bridge");
           expect(body.user.name).to.equal("jonny");
         });
+    });
+    it("GET /:user_id -> returns a 404 error for non-existent user", () => {
+      return request.get(`/api/users/5ae2f2e0b1f96232cf183660`).expect(404);
     });
   });
 });

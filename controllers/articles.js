@@ -1,5 +1,4 @@
 const { Article, Comment } = require("../models");
-const ObjectId = require("mongoose").Types.ObjectId;
 
 const {
   addCommentCountsToArticleDocs,
@@ -19,16 +18,17 @@ exports.sendArticles = (req, res, next) => {
       res.send({ articles });
     })
     .catch(err => {
-      next(err);
+      next({ status: 502, message: "Internal database error" });
     });
 };
 
 exports.sendArticleById = (req, res, next) => {
-  return Article.find({ _id: ObjectId(req.params.article_id) })
+  return Article.find({ _id: req.params.article_id })
     .lean()
     .populate("belongs_to", "-__v")
     .populate("created_by", "-__v")
     .then(articleDoc => {
+      if (articleDoc.length === 0) throw "Article not found";
       return addCommentCountsToArticleDocs(articleDoc);
     })
     .then(article => {
@@ -36,23 +36,40 @@ exports.sendArticleById = (req, res, next) => {
       res.send({ article });
     })
     .catch(err => {
-      next(err);
+      if (err === "Article not found") {
+        next({ status: 404, message: err });
+      } else if (err.name === "CastError")
+        next({ status: 400, message: "Bad request, search must use ID" });
+      else next({ status: 502, message: "Internal database error" });
     });
 };
 
 exports.sendCommentsOnArticle = (req, res, next) => {
-  return Comment.find(
-    { belongs_to: ObjectId(req.params.article_id) },
-    { belongs_to: false }
-  )
-    .populate("created_by", "-__v")
+  return Article.findById(req.params.article_id)
+    .then(article => {
+      if (article === null) throw "Article not found";
+      return Comment.find(
+        { belongs_to: req.params.article_id },
+        { belongs_to: false }
+      ).populate("created_by", "-__v");
+    })
     .then(comments => {
       res.send({ comments });
+    })
+    .catch(err => {
+      if (err === "Article not found") next({ status: 404, message: err });
+      else if (err.name === "CastError")
+        next({ status: 400, message: "Bad request, search must use ID" });
+      else next({ status: 502, message: "Internal database error" });
     });
 };
 
 exports.postComment = (req, res, next) => {
-  return getRandomUserId()
+  return Article.findById(req.params.article_id)
+    .then(article => {
+      if (article === null) throw "Article not found";
+      return getRandomUserId();
+    })
     .then(user => {
       return new Comment(
         createFormattedComment(req.body.body, req.params.article_id, user)
@@ -60,6 +77,22 @@ exports.postComment = (req, res, next) => {
     })
     .then(comment => {
       res.status(201).send({ comment });
+    })
+    .catch(err => {
+      if (err === "Article not found") next({ status: 404, message: err });
+      else {
+        err.name === "ValidationError"
+          ? err.errors.belongs_to !== undefined
+            ? next({
+                status: 404,
+                message: "Invalid article ID, comment was not posted"
+              })
+            : next({
+                status: 400,
+                message: "Invalid comment format, comment was not posted"
+              })
+          : next({ status: 502, message: "Internal database error" });
+      }
     });
 };
 
@@ -69,18 +102,26 @@ exports.adjustArticleVotes = (req, res, next) => {
     ? (upOrDown = 1)
     : req.query.vote === "down"
       ? (upOrDown = -1)
-      : next({ status: 400, message: "Invalid vote passed" });
-  return Article.findByIdAndUpdate(
-    ObjectId(req.params.article_id),
-    {
-      $inc: { votes: upOrDown }
-    },
-    { new: true, select: { votes: true, _id: false } }
-  )
-    .then(article => {
-      res.send({ article });
-    })
-    .catch(err => {
-      next(err);
-    });
+      : req.query.vote === undefined
+        ? (upOrDown = "No change made, user must give an up or down vote query")
+        : (upOrDown = "No change made, invalid vote passed");
+  if (typeof upOrDown === "string") next({ status: 400, message: upOrDown });
+  else
+    return Article.findByIdAndUpdate(
+      req.params.article_id,
+      {
+        $inc: { votes: upOrDown }
+      },
+      { new: true, select: { votes: true, _id: false } }
+    )
+      .then(article => {
+        if (article === null)
+          next({ status: 404, message: "Article ID not found" });
+        else res.send({ article });
+      })
+      .catch(err => {
+        if (err.name === "CastError")
+          next({ status: 404, message: "Invalid article ID format" });
+        else next({ status: 502, message: "Internal database error" });
+      });
 };

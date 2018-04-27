@@ -2,9 +2,9 @@
   "topics": {
     "Get all the topics": "GET /api/topics",
     "Returns all the articles for a certain topic":
-      "GET /api/topics/:topic_id/articles",
+      "GET /api/topics/:topic_id/articles OR GET /api/topics/:topic_slug/articles",
     "Add a new article to a topic. This route requires a JSON body with title and body key value pairs":
-      "POST /api/topics/:topic_id/articles"
+      "POST /api/topics/:topic_id/articles OR POST /api/topics/:topic_slug/articles"
   },
   "articles": {
     "Returns all the articles": "GET /api/articles",

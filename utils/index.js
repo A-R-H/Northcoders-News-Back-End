@@ -24,13 +24,6 @@ exports.formatArticleData = (articleData, topicDocs, userDocs) => {
   }, []);
 };
 
-// function createTopicRefObj(topicDocs) {
-//   return topicDocs.reduce((acc, topic) => {
-//     acc[topic.slug] = topic._id;
-//     return acc;
-//   }, {});
-// }
-
 exports.createComments = (articleDocs, userDocs) => {
   const amount = process.env.NODE_ENV === "test" ? 3 : 50;
   const commentBodies = randomWords({
