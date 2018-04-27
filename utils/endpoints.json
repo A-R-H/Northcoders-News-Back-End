@@ -26,6 +26,6 @@
   },
   "users": {
     "Returns a JSON object with the profile data for the specified user":
-      "GET /api/users/:username -> https://northcoders-news-back.herokuapp.com/api/users(user id)"
+      "GET /api/users/:username -> https://northcoders-news-back.herokuapp.com/api/users/(user id)"
   }
 }

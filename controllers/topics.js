@@ -1,4 +1,4 @@
-const { Topic, Article, Comment } = require("../models");
+const { Topic, Article } = require("../models");
 
 const {
   getIdFromSlugOrId,

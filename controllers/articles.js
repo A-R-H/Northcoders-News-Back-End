@@ -65,12 +65,12 @@ exports.sendCommentsOnArticle = (req, res, next) => {
 };
 
 exports.postComment = (req, res, next) => {
-  return Article.findById(req.params.article_id)
-    .then(article => {
+  return Promise.all([
+    Article.findById(req.params.article_id),
+    getRandomUserId()
+  ])
+    .then(([article, user]) => {
       if (article === null) throw "Article not found";
-      return getRandomUserId();
-    })
-    .then(user => {
       return new Comment(
         createFormattedComment(req.body.body, req.params.article_id, user)
       ).save();
