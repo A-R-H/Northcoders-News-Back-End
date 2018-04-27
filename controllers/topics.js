@@ -1,7 +1,5 @@
 const { Topic, Article, Comment } = require("../models");
 
-const ObjectId = require("mongoose").Schema.Types.ObjectId;
-
 const {
   getIdFromSlugOrId,
   getRandomUserId,

@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha spec/",
-    "dev": "nodemon listen.js"
+    "dev": "nodemon listen.js",
+    "start": "NODE_ENV=production node listen.js",
+    "seed:prod": "NODE_ENV=production node seed/dev.seed.js"
   },
   "author": "",
   "license": "ISC",
