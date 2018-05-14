@@ -1,11 +1,12 @@
 const { Comment } = require("../models");
 
 exports.adjustCommentVotes = (req, res, next) => {
-  let upOrDown =
-    req.query.vote === "up" ? 1 : req.query.vote === "down" ? -1 : null;
+  const { vote } = req.query;
+  const { comment_id } = req.params;
+  let upOrDown = vote === "up" ? 1 : vote === "down" ? -1 : null;
   if (typeof upOrDown === "number") {
     return Comment.findByIdAndUpdate(
-      req.params.comment_id,
+      comment_id,
       {
         $inc: { votes: upOrDown }
       },
@@ -22,7 +23,7 @@ exports.adjustCommentVotes = (req, res, next) => {
         else next({ status: 502, message: "Internal database error" });
       });
   } else {
-    return Comment.findById(req.params.comment_id)
+    return Comment.findById(comment_id)
       .then(comment => {
         if (comment === null)
           next({ status: 404, message: "Comment ID not found" });
@@ -42,7 +43,8 @@ exports.adjustCommentVotes = (req, res, next) => {
 };
 
 exports.deleteComment = (req, res, next) => {
-  return Comment.remove({ _id: req.params.comment_id })
+  const { comment_id } = req.params;
+  return Comment.remove({ _id: comment_id })
     .then(deleteMessage => {
       if (deleteMessage.n === 0)
         next({ status: 404, message: "Comment not found" });

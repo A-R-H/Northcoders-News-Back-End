@@ -17,7 +17,8 @@ exports.sendTopics = (req, res, next) => {
 };
 
 exports.sendArticlesByTopic = (req, res, next) => {
-  return getIdFromSlugOrId(req.params.topic)
+  const { topic } = req.params;
+  return getIdFromSlugOrId(topic)
     .then(topic_id => {
       return Article.find({ belongs_to: topic_id })
         .lean()
@@ -38,7 +39,8 @@ exports.sendArticlesByTopic = (req, res, next) => {
 };
 
 exports.postArticle = (req, res, next) => {
-  return Promise.all([getIdFromSlugOrId(req.params.topic), getRandomUserId()])
+  const { topic } = req.params;
+  return Promise.all([getIdFromSlugOrId(topic), getRandomUserId()])
     .then(([belongs_to, created_by]) => {
       const article = req.body;
       article.belongs_to = belongs_to;

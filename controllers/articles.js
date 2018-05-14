@@ -19,7 +19,8 @@ exports.sendArticles = (req, res, next) => {
 };
 
 exports.sendArticleById = (req, res, next) => {
-  return Article.find({ _id: req.params.article_id })
+  const { article_id } = req.params;
+  return Article.find({ _id: article_id })
     .lean()
     .populate("belongs_to", "-__v")
     .populate("created_by", "-__v")
@@ -41,11 +42,12 @@ exports.sendArticleById = (req, res, next) => {
 };
 
 exports.sendCommentsOnArticle = (req, res, next) => {
-  return Article.findById(req.params.article_id)
+  const { article_id } = req.params;
+  return Article.findById(article_id)
     .then(article => {
       if (article === null) throw "Article not found";
       return Comment.find(
-        { belongs_to: req.params.article_id },
+        { belongs_to: article_id },
         { belongs_to: false }
       ).populate("created_by", "-__v");
     })
@@ -61,15 +63,14 @@ exports.sendCommentsOnArticle = (req, res, next) => {
 };
 
 exports.postComment = (req, res, next) => {
-  return Promise.all([
-    Article.findById(req.params.article_id),
-    getRandomUserId()
-  ])
+  const { article_id } = req.params;
+  const { body } = req.body;
+  return Promise.all([Article.findById(article_id), getRandomUserId()])
     .then(([article, user]) => {
       if (article === null) throw "Article not found";
       return new Comment({
-        body: req.body.body,
-        belongs_to: req.params.article_id,
+        body,
+        belongs_to: article_id,
         created_by: user
       }).save();
     })
@@ -95,11 +96,12 @@ exports.postComment = (req, res, next) => {
 };
 
 exports.adjustArticleVotes = (req, res, next) => {
-  let upOrDown =
-    req.query.vote === "up" ? 1 : req.query.vote === "down" ? -1 : null;
+  const { vote } = req.query;
+  const { article_id } = req.params;
+  let upOrDown = vote === "up" ? 1 : vote === "down" ? -1 : null;
   if (typeof upOrDown === "number") {
     return Article.findByIdAndUpdate(
-      req.params.article_id,
+      article_id,
       {
         $inc: { votes: upOrDown }
       },
@@ -116,7 +118,7 @@ exports.adjustArticleVotes = (req, res, next) => {
         else next({ status: 502, message: "Internal database error" });
       });
   } else {
-    return Article.findById(req.params.article_id)
+    return Article.findById(article_id)
       .then(article => {
         if (article === null)
           next({ status: 404, message: "Article ID not found" });

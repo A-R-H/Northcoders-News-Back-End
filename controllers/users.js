@@ -1,7 +1,8 @@
 const { User } = require("../models");
 
 exports.sendUsers = (req, res, next) => {
-  return User.findOne({ username: req.params.username })
+  const { username } = req.params;
+  return User.findOne({ username })
     .then(user => {
       if (user === null) throw "User not found";
       res.send({ user });
