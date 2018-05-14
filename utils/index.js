@@ -91,11 +91,3 @@ exports.addCommentCountsToArticleDocs = docs => {
     });
   });
 };
-
-exports.createFormattedComment = (body, article_id, user_id) => {
-  return {
-    body,
-    belongs_to: article_id,
-    created_by: user_id
-  };
-};

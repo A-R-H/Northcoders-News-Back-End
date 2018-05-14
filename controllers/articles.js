@@ -1,10 +1,6 @@
 const { Article, Comment } = require("../models");
 
-const {
-  addCommentCountsToArticleDocs,
-  createFormattedComment,
-  getRandomUserId
-} = require("../utils");
+const { addCommentCountsToArticleDocs, getRandomUserId } = require("../utils");
 
 exports.sendArticles = (req, res, next) => {
   return Article.find()
@@ -71,9 +67,11 @@ exports.postComment = (req, res, next) => {
   ])
     .then(([article, user]) => {
       if (article === null) throw "Article not found";
-      return new Comment(
-        createFormattedComment(req.body.body, req.params.article_id, user)
-      ).save();
+      return new Comment({
+        body: req.body.body,
+        belongs_to: req.params.article_id,
+        created_by: user
+      }).save();
     })
     .then(comment => {
       res.status(201).send({ comment });
