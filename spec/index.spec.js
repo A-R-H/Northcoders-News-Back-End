@@ -268,13 +268,13 @@ describe("/api", () => {
           expect(body.article.votes).to.equal(-1);
         });
     });
-    it("PUT /:article_id?vote=notUpOrDown -> returns a 400 error when passed an invalid vote query", () => {
+    it("PUT /:article_id?notVote=notUpOrDown -> returns a 200 status and the unchanged vote count when passed a query that is not a vote up or down", () => {
       return request
         .put(`/api/articles/${articles[0]._id}?vote=biggerPlease`)
-        .expect(400);
-    });
-    it("PUT /:article_id?vote=notUpOrDown -> returns a 400 error when passed no vote query", () => {
-      return request.put(`/api/articles/${articles[0]._id}`).expect(400);
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.article.votes).to.equal(0);
+        });
     });
   });
   describe("/comments", () => {
@@ -294,13 +294,13 @@ describe("/api", () => {
           expect(body.comment.votes).to.equal(-1);
         });
     });
-    it("PUT /:comment_id?vote=notUpOrDown -> returns a 400 error when passed an invalid vote query", () => {
+    it("PUT /:comment_id??notVote=notUpOrDown -> returns a 200 status and the unchanged vote count when passed a query that is not a vote up or down", () => {
       return request
         .put(`/api/comments/${comments[0]._id}?vote=biggerPlease`)
-        .expect(400);
-    });
-    it("PUT /:comment_id?vote=notUpOrDown -> returns a 400 error when passed no vote query", () => {
-      return request.put(`/api/comments/${comments[0]._id}`).expect(400);
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.comment.votes).to.equal(0);
+        });
     });
     it("DELETE /:comment_id -> Deletes a comment", () => {
       return request

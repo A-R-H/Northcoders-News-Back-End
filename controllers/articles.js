@@ -95,16 +95,9 @@ exports.postComment = (req, res, next) => {
 };
 
 exports.adjustArticleVotes = (req, res, next) => {
-  let upOrDown;
-  req.query.vote === "up"
-    ? (upOrDown = 1)
-    : req.query.vote === "down"
-      ? (upOrDown = -1)
-      : req.query.vote === undefined
-        ? (upOrDown = "No change made, user must give an up or down vote query")
-        : (upOrDown = "No change made, invalid vote passed");
-  if (typeof upOrDown === "string") next({ status: 400, message: upOrDown });
-  else
+  let upOrDown =
+    req.query.vote === "up" ? 1 : req.query.vote === "down" ? -1 : null;
+  if (typeof upOrDown === "number") {
     return Article.findByIdAndUpdate(
       req.params.article_id,
       {
@@ -122,4 +115,22 @@ exports.adjustArticleVotes = (req, res, next) => {
           next({ status: 404, message: "Invalid article ID format" });
         else next({ status: 502, message: "Internal database error" });
       });
+  } else {
+    return Article.findById(req.params.article_id)
+      .then(article => {
+        if (article === null)
+          next({ status: 404, message: "Article ID not found" });
+        else
+          res.send({
+            article: {
+              votes: article.votes
+            }
+          });
+      })
+      .catch(err => {
+        if (err.name === "CastError")
+          next({ status: 404, message: "Invalid article ID format" });
+        else next({ status: 502, message: "Internal database error" });
+      });
+  }
 };
