@@ -1,6 +1,7 @@
 const app = require("express")();
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 const DB_URL = process.env.DB_URL || require("./config");
 
 const apiRouter = require("./routes/api");
@@ -8,6 +9,8 @@ const apiRouter = require("./routes/api");
 mongoose.connect(DB_URL, () => {
   console.log(`Connected to ${DB_URL}`);
 });
+
+app.use(cors());
 
 app.use(bodyParser.json());
 
