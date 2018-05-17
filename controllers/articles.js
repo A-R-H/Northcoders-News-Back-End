@@ -64,14 +64,18 @@ exports.sendCommentsOnArticle = (req, res, next) => {
 
 exports.postComment = (req, res, next) => {
   const { article_id } = req.params;
-  const { body } = req.body;
-  return Promise.all([Article.findById(article_id), getRandomUserId()])
+  const { body, created_by } = req.body;
+  return Promise.all([
+    Article.findById(article_id),
+    created_by || getRandomUserId()
+  ])
     .then(([article, user]) => {
       if (article === null) throw "Article not found";
       return new Comment({
         body,
         belongs_to: article_id,
-        created_by: user
+        created_by: user,
+        created_at: new Date().getTime()
       }).save();
     })
     .then(comment => {
