@@ -40,7 +40,11 @@ exports.sendArticlesByTopic = (req, res, next) => {
 
 exports.postArticle = (req, res, next) => {
   const { topic } = req.params;
-  return Promise.all([getIdFromSlugOrId(topic), getRandomUserId()])
+  const { created_by } = req.body;
+  return Promise.all([
+    getIdFromSlugOrId(topic),
+    created_by || getRandomUserId()
+  ])
     .then(([belongs_to, created_by]) => {
       const article = req.body;
       article.belongs_to = belongs_to;
